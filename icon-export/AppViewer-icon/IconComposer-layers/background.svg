@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" data-slab-side="#F3A444" data-accent="#FF7A45">
+<defs>
+<path id="body-shape" d="M 627.36 100 c 103.834 0 155.751 0 195.41 20.207 a 185.4 185.4 0 0 1 81.023 81.023 c 20.207 39.659 20.207 91.576 20.207 195.41 L 924 627.36 c 0 103.834 0 155.751 -20.207 195.41 a 185.4 185.4 0 0 1 -81.023 81.023 c -39.659 20.207 -91.576 20.207 -195.41 20.207 L 396.64 924 c -103.834 0 -155.751 0 -195.41 -20.207 a 185.4 185.4 0 0 1 -81.023 -81.023 c -20.207 -39.659 -20.207 -91.576 -20.207 -195.41 L 100 396.64 c 0 -103.834 0 -155.751 20.207 -195.41 a 185.4 185.4 0 0 1 81.023 -81.023 c 39.659 -20.207 91.576 -20.207 195.41 -20.207 Z"/>
+<clipPath id="clip-body"><use href="#body-shape"/></clipPath>
+<linearGradient id="g-body" gradientUnits="userSpaceOnUse" x1="280.6" y1="15.8" x2="743.4" y2="1008.2"><stop offset="0.000" stop-color="#FF82A7"/><stop offset="0.550" stop-color="#FF7A45"/><stop offset="1.000" stop-color="#FFF264"/></linearGradient>
+<radialGradient id="g-blob0" gradientUnits="userSpaceOnUse" cx="198.9" cy="165.9" r="576.8"><stop offset="0" stop-color="#FF97EA" stop-opacity="0.85"/><stop offset="1" stop-color="#FF97EA" stop-opacity="0"/></radialGradient>
+<radialGradient id="g-blob1" gradientUnits="userSpaceOnUse" cx="882.8" cy="882.8" r="618.0"><stop offset="0" stop-color="#E6FF82" stop-opacity="0.8"/><stop offset="1" stop-color="#E6FF82" stop-opacity="0"/></radialGradient>
+<linearGradient id="g-shade" gradientUnits="userSpaceOnUse" x1="0" y1="100.0" x2="0" y2="924.0"><stop offset="0" stop-color="#FFF" stop-opacity="0.112"/><stop offset=".42" stop-color="#FFF" stop-opacity="0"/><stop offset=".58" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.080"/></linearGradient>
+<radialGradient id="g-gloss" gradientUnits="userSpaceOnUse" cx="512" cy="120" r="520" gradientTransform="translate(0 66) scale(1 .45)"><stop offset="0" stop-color="#FFF" stop-opacity="1"/><stop offset="1" stop-color="#FFF" stop-opacity="0"/></radialGradient>
+<linearGradient id="g-edge" gradientUnits="userSpaceOnUse" x1="0" y1="100.0" x2="0" y2="924.0"><stop offset="0" stop-color="#FFF" stop-opacity=".45"/><stop offset=".5" stop-color="#FFF" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>
+<g id="glyph" transform="translate(209.92 199.92) scale(5.9464)"><rect x='12' y='12' width='32' height='32' rx='10' fill='currentColor'/><rect x='56' y='12' width='32' height='32' rx='10' fill='currentColor'/><rect x='12' y='56' width='32' height='32' rx='10' fill='currentColor'/><path d='M62 58 L86 72 L62 86 Z' fill='currentColor' stroke='currentColor' stroke-width='7' stroke-linejoin='round'/></g>
+<linearGradient id="g-face" gradientUnits="userSpaceOnUse" x1="0" y1="271.3" x2="0" y2="732.7"><stop offset="0.000" stop-color="#FFFFFF"/><stop offset="1.000" stop-color="#FFE2D6"/></linearGradient>
+<linearGradient id="g-sheen" gradientUnits="userSpaceOnUse" x1="0" y1="271.3" x2="0" y2="732.7"><stop offset="0" stop-color="#FFF" stop-opacity="1"/><stop offset=".55" stop-color="#FFF" stop-opacity="0"/></linearGradient>
+<mask id="m-glyph" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#glyph" color="#FFF"/></mask>
+<mask id="m-glyph-top" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#glyph" color="#FFF"/><use href="#glyph" color="#000" transform="translate(0 5.6)"/></mask>
+<mask id="m-glyph-bottom" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#glyph" color="#FFF"/><use href="#glyph" color="#000" transform="translate(0 -5.6)"/></mask>
+<mask id="m-body-top" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#body-shape" fill="#FFF"/><use href="#body-shape" fill="#000" transform="translate(0 7)"/></mask>
+<mask id="m-body-bottom" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#body-shape" fill="#FFF"/><use href="#body-shape" fill="#000" transform="translate(0 -9)"/></mask>
+<filter id="f-ambient" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="18"/></filter>
+<filter id="f-contact" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+<filter id="f-gshadow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="20"/></filter>
+<filter id="f-contact-g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5.0"/></filter>
+<filter id="f-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.4"/></filter>
+</defs>
+<g transform="translate(512 512) scale(1.24272) translate(-512 -512)">
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-body)"/>
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-blob0)"/>
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-blob1)"/>
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-shade)"/>
+</g>
+</svg>

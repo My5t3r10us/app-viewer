@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>App Viewer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="shell boot" id="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="side-head" data-tauri-drag-region="deep">
+        <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f7cff"/><stop offset="1" stop-color="#7b4dff"/></linearGradient></defs>
+          <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#lg)"/>
+          <rect x="96" y="120" width="320" height="272" rx="36" fill="none" stroke="#fff" stroke-width="32"/>
+          <line x1="96" y1="190" x2="416" y2="190" stroke="#fff" stroke-width="32"/>
+          <rect x="176" y="190" width="32" height="202" fill="#fff"/>
+        </svg>
+        <span class="brand-name">App Viewer</span>
+        <button class="icon-btn sm" id="pin-btn" title="Garder la sidebar affichée (Ctrl+B)" hidden></button>
+        <button class="icon-btn sm" id="hide-btn" title="Masquer la sidebar (Ctrl+B)"></button>
+        <button class="icon-btn sm" id="add-btn" title="Ajouter une application (Ctrl+N)"></button>
+      </div>
+      <div class="side-section">
+        <span>Applications</span>
+        <span class="side-count" id="side-count"></span>
+      </div>
+      <ul class="app-list" id="app-list"></ul>
+      <div class="side-foot">
+        <span class="summary" id="side-summary"></span>
+        <span class="foot-btns">
+          <button class="foot-btn" id="downloads-btn" title="Téléchargements (Ctrl+J)"></button>
+          <button class="foot-btn" id="settings-btn" title="Paramètres (Ctrl+,)"></button>
+        </span>
+      </div>
+      <div class="sidebar-resizer" id="sidebar-resizer" title="Glisser pour redimensionner · double-clic : largeur par défaut"></div>
+    </aside>
+    <!-- Kept outside the hosted app's native webview so the UI still sees the pointer there. -->
+    <div class="sidebar-rail" id="sidebar-rail" title="Afficher la sidebar (Ctrl+B)"><span></span></div>
+
+    <main class="main">
+      <header class="toolbar" id="toolbar" data-tauri-drag-region="deep"></header>
+      <datalist id="addr-history"></datalist>
+      <section class="stage" id="stage">
+        <div class="viewport" id="viewport"></div>
+      </section>
+      <section class="logs" id="logs" hidden>
+        <div class="logs-resizer" id="logs-resizer" title="Glisser pour redimensionner · double-clic : hauteur par défaut"></div>
+        <div class="logs-head">
+          <span class="logs-title" id="logs-title">Logs</span>
+          <button class="icon-btn sm" id="logs-detach" title="Détacher dans une fenêtre (se ferme à la fin de la commande)"></button>
+          <button class="icon-btn sm" id="logs-clear" title="Vider les logs"></button>
+          <button class="icon-btn sm" id="logs-close" title="Fermer (Ctrl+L)"></button>
+        </div>
+        <div class="log-lines" id="log-lines"></div>
+      </section>
+
+      <section class="settings" id="downloads" hidden>
+        <header class="settings-head" data-tauri-drag-region="deep">
+          <button class="icon-btn" id="downloads-back" title="Retour (Échap)"></button>
+          <h1>Téléchargements</h1>
+          <span class="grow"></span>
+          <button class="btn sm" id="downloads-clear" title="Retire de la liste les téléchargements terminés (les fichiers restent sur le disque)"></button>
+        </header>
+        <div class="settings-body">
+          <div class="dl-list" id="dl-list"></div>
+        </div>
+      </section>
+
+      <section class="settings" id="settings" hidden>
+        <header class="settings-head" data-tauri-drag-region="deep">
+          <button class="icon-btn" id="settings-back" title="Retour (Échap)"></button>
+          <h1>Paramètres</h1>
+        </header>
+        <div class="settings-body">
+          <div class="settings-group">
+            <h2>Général</h2>
+            <label class="setting">
+              <span class="setting-text">
+                <span class="setting-title">Garder App Viewer actif en arrière-plan</span>
+                <span class="setting-desc">Fermer la fenêtre la masque au lieu de quitter : les apps continuent de tourner et App Viewer reste accessible depuis son icône dans la zone de notification. « Quitter » depuis cette icône arrête tout.</span>
+              </span>
+              <input type="checkbox" class="switch" data-setting="keepInBackground">
+            </label>
+          </div>
+          <div class="settings-group">
+            <h2>Interface</h2>
+            <label class="setting">
+              <span class="setting-text">
+                <span class="setting-title">Révéler la sidebar au survol du bord gauche</span>
+                <span class="setting-desc">Quand la sidebar est masquée, approcher la souris du bord gauche de la fenêtre l'affiche par-dessus l'app. Elle se replie dès que la souris la quitte.</span>
+              </span>
+              <input type="checkbox" class="switch" data-setting="revealSidebarOnHover">
+            </label>
+          </div>
+          <div class="settings-group">
+            <h2>Terminal</h2>
+            <label class="setting">
+              <span class="setting-text">
+                <span class="setting-title">Fermeture du terminal détaché</span>
+                <span class="setting-desc">Délai avant que la fenêtre de logs détachée se ferme quand la commande se termine normalement. En cas d'erreur, elle reste ouverte.</span>
+              </span>
+              <span class="number-field">
+                <input type="number" min="0" max="60" step="1" class="mono" data-setting="terminalAutocloseSecs">
+                <span>s</span>
+              </span>
+            </label>
+          </div>
+          <div class="settings-group">
+            <h2>Contrôle par agent</h2>
+            <div class="info-card">
+              <span class="info-icon" id="agent-icon"></span>
+              <span class="setting-text">
+                <span class="setting-title">Piloter une app sans navigateur headless</span>
+                <span class="setting-desc">Un agent IA peut lire la page d'une app, cliquer et saisir du texte avec <code>appv ui</code>, et en demander une capture avec <code>appv screenshot</code>. Il faut d'abord l'autoriser <em>app par app</em> avec le bouton robot de la barre d'outils : aucune commande ne peut le faire à votre place, l'autorisation tombe à la fermeture d'App Viewer, chaque action est écrite dans les logs de l'app et un bandeau « Agent en contrôle » s'affiche pendant qu'il agit.</span>
+              </span>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h2>Sécurité</h2>
+            <div class="info-card">
+              <span class="info-icon" id="security-icon"></span>
+              <span class="setting-text">
+                <span class="setting-title">Aucun process fantôme</span>
+                <span class="setting-desc">Chaque commande tourne dans un <em>Job Object</em> Windows. Quitter App Viewer (ou s'il plante) arrête toutes les apps lancées et tous leurs sous-process. Les apps « Externe », lancées hors d'App Viewer, ne sont jamais arrêtées.</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Frameless window: min/max/close slide in when the pointer reaches the top-right corner. -->
+  <div class="win-hot" id="win-hot"></div>
+  <div class="win-controls" id="win-controls">
+    <button data-win="minimize" title="Réduire">&#xE921;</button>
+    <button data-win="maximize" title="Agrandir" id="win-max">&#xE922;</button>
+    <button data-win="close" class="close" title="Fermer">&#xE8BB;</button>
+  </div>
+
+  <dialog class="editor" id="editor">
+    <form method="dialog" id="editor-form" novalidate>
+      <h2 id="editor-title">Nouvelle application</h2>
+      <label class="field">
+        <span>Dossier de l'application</span>
+        <div class="row">
+          <input name="path" required placeholder="C:\Code\mon-app" autocomplete="off" spellcheck="false">
+          <button type="button" class="btn" id="browse-btn">Parcourir…</button>
+        </div>
+      </label>
+      <label class="field">
+        <span>Nom</span>
+        <input name="name" required placeholder="mon-app" autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Commande de lancement</span>
+        <input name="command" required placeholder="node server.js" autocomplete="off" spellcheck="false" class="mono">
+        <small>Exécutée avec <code>cmd /c</code> dans le dossier.</small>
+      </label>
+      <label class="check">
+        <input type="checkbox" name="native">
+        <span>App native Windows <small>(exe ou commande de dev : sa fenêtre est incrustée ici, pas de port)</small></span>
+      </label>
+      <div class="row web-only">
+        <label class="field grow">
+          <span>Port</span>
+          <input name="port" type="number" min="1" max="65535" required placeholder="3000" class="mono">
+        </label>
+        <label class="field grow">
+          <span>Chemin de l'URL</span>
+          <input name="urlPath" placeholder="/" autocomplete="off" class="mono">
+        </label>
+      </div>
+      <label class="check">
+        <input type="checkbox" name="autostart">
+        <span>Démarrer automatiquement à l'ouverture d'App Viewer</span>
+      </label>
+      <label class="check web-only">
+        <input type="checkbox" name="setPortEnv" checked>
+        <span>Transmettre la variable <code>PORT</code> à la commande <small>(à décocher si le <code>.env</code> du projet fixe déjà PORT, p. ex. pour son backend)</small></span>
+      </label>
+      <p class="form-error" id="form-error" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn danger" id="delete-btn" hidden>Supprimer</button>
+        <span class="grow"></span>
+        <button type="button" class="btn" id="cancel-btn">Annuler</button>
+        <button type="submit" class="btn primary" id="save-btn">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="shared.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

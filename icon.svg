@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" data-slab-side="#F3A444" data-accent="#FF7A45">
+<defs>
+<path id="body-shape" d="M 627.36 100 c 103.834 0 155.751 0 195.41 20.207 a 185.4 185.4 0 0 1 81.023 81.023 c 20.207 39.659 20.207 91.576 20.207 195.41 L 924 627.36 c 0 103.834 0 155.751 -20.207 195.41 a 185.4 185.4 0 0 1 -81.023 81.023 c -39.659 20.207 -91.576 20.207 -195.41 20.207 L 396.64 924 c -103.834 0 -155.751 0 -195.41 -20.207 a 185.4 185.4 0 0 1 -81.023 -81.023 c -20.207 -39.659 -20.207 -91.576 -20.207 -195.41 L 100 396.64 c 0 -103.834 0 -155.751 20.207 -195.41 a 185.4 185.4 0 0 1 81.023 -81.023 c 39.659 -20.207 91.576 -20.207 195.41 -20.207 Z"/>
+<clipPath id="clip-body"><use href="#body-shape"/></clipPath>
+<linearGradient id="g-body" gradientUnits="userSpaceOnUse" x1="280.6" y1="15.8" x2="743.4" y2="1008.2"><stop offset="0.000" stop-color="#FF82A7"/><stop offset="0.550" stop-color="#FF7A45"/><stop offset="1.000" stop-color="#FFF264"/></linearGradient>
+<radialGradient id="g-blob0" gradientUnits="userSpaceOnUse" cx="198.9" cy="165.9" r="576.8"><stop offset="0" stop-color="#FF97EA" stop-opacity="0.85"/><stop offset="1" stop-color="#FF97EA" stop-opacity="0"/></radialGradient>
+<radialGradient id="g-blob1" gradientUnits="userSpaceOnUse" cx="882.8" cy="882.8" r="618.0"><stop offset="0" stop-color="#E6FF82" stop-opacity="0.8"/><stop offset="1" stop-color="#E6FF82" stop-opacity="0"/></radialGradient>
+<linearGradient id="g-shade" gradientUnits="userSpaceOnUse" x1="0" y1="100.0" x2="0" y2="924.0"><stop offset="0" stop-color="#FFF" stop-opacity="0.112"/><stop offset=".42" stop-color="#FFF" stop-opacity="0"/><stop offset=".58" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.080"/></linearGradient>
+<radialGradient id="g-gloss" gradientUnits="userSpaceOnUse" cx="512" cy="120" r="520" gradientTransform="translate(0 66) scale(1 .45)"><stop offset="0" stop-color="#FFF" stop-opacity="1"/><stop offset="1" stop-color="#FFF" stop-opacity="0"/></radialGradient>
+<linearGradient id="g-edge" gradientUnits="userSpaceOnUse" x1="0" y1="100.0" x2="0" y2="924.0"><stop offset="0" stop-color="#FFF" stop-opacity=".45"/><stop offset=".5" stop-color="#FFF" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>
+<g id="glyph" transform="translate(209.92 199.92) scale(5.9464)"><rect x='12' y='12' width='32' height='32' rx='10' fill='currentColor'/><rect x='56' y='12' width='32' height='32' rx='10' fill='currentColor'/><rect x='12' y='56' width='32' height='32' rx='10' fill='currentColor'/><path d='M62 58 L86 72 L62 86 Z' fill='currentColor' stroke='currentColor' stroke-width='7' stroke-linejoin='round'/></g>
+<linearGradient id="g-face" gradientUnits="userSpaceOnUse" x1="0" y1="271.3" x2="0" y2="732.7"><stop offset="0.000" stop-color="#FFFFFF"/><stop offset="1.000" stop-color="#FFE2D6"/></linearGradient>
+<linearGradient id="g-sheen" gradientUnits="userSpaceOnUse" x1="0" y1="271.3" x2="0" y2="732.7"><stop offset="0" stop-color="#FFF" stop-opacity="1"/><stop offset=".55" stop-color="#FFF" stop-opacity="0"/></linearGradient>
+<mask id="m-glyph" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#glyph" color="#FFF"/></mask>
+<mask id="m-glyph-top" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#glyph" color="#FFF"/><use href="#glyph" color="#000" transform="translate(0 5.6)"/></mask>
+<mask id="m-glyph-bottom" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#glyph" color="#FFF"/><use href="#glyph" color="#000" transform="translate(0 -5.6)"/></mask>
+<mask id="m-body-top" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#body-shape" fill="#FFF"/><use href="#body-shape" fill="#000" transform="translate(0 7)"/></mask>
+<mask id="m-body-bottom" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1424" height="1424"><use href="#body-shape" fill="#FFF"/><use href="#body-shape" fill="#000" transform="translate(0 -9)"/></mask>
+<filter id="f-ambient" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="18"/></filter>
+<filter id="f-contact" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+<filter id="f-gshadow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="20"/></filter>
+<filter id="f-contact-g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5.0"/></filter>
+<filter id="f-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.4"/></filter>
+</defs>
+<g id="drop-shadow" opacity="1.000"><use href="#body-shape" fill="#000" opacity=".30" transform="translate(0 12)" filter="url(#f-ambient)"/><use href="#body-shape" fill="#000" opacity=".22" transform="translate(0 3)" filter="url(#f-contact)"/></g>
+<g id="body" clip-path="url(#clip-body)">
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-body)"/>
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-blob0)"/>
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-blob1)"/>
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-shade)"/>
+<rect x="100.0" y="100.0" width="824" height="824" fill="url(#g-gloss)" opacity="0.45"/>
+<g filter="url(#f-gshadow)" opacity="0.38"><use href="#glyph" color="#A23409" transform="translate(0 26.0)"/></g>
+<g filter="url(#f-contact-g)" opacity="0.34"><use href="#glyph" color="#A23409" transform="translate(0 23.0)"/></g>
+<g id="glyph-3d">
+<use href="#glyph" color="#FF5813" transform="translate(0 20)"/>
+<use href="#glyph" color="#FF5A16" transform="translate(0 19)"/>
+<use href="#glyph" color="#FF5D1A" transform="translate(0 18)"/>
+<use href="#glyph" color="#FF5F1D" transform="translate(0 17)"/>
+<use href="#glyph" color="#FF6120" transform="translate(0 16)"/>
+<use href="#glyph" color="#FF6323" transform="translate(0 15)"/>
+<use href="#glyph" color="#FF6627" transform="translate(0 14)"/>
+<use href="#glyph" color="#FF682A" transform="translate(0 13)"/>
+<use href="#glyph" color="#FF6A2D" transform="translate(0 12)"/>
+<use href="#glyph" color="#FF6C30" transform="translate(0 11)"/>
+<use href="#glyph" color="#FF6F34" transform="translate(0 10)"/>
+<use href="#glyph" color="#FF7137" transform="translate(0 9)"/>
+<use href="#glyph" color="#FF733A" transform="translate(0 8)"/>
+<use href="#glyph" color="#FF753D" transform="translate(0 7)"/>
+<use href="#glyph" color="#FF7841" transform="translate(0 6)"/>
+<use href="#glyph" color="#FF7A44" transform="translate(0 5)"/>
+<use href="#glyph" color="#FF7C47" transform="translate(0 4)"/>
+<use href="#glyph" color="#FF7E4A" transform="translate(0 3)"/>
+<use href="#glyph" color="#FF814E" transform="translate(0 2)"/>
+<use href="#glyph" color="#FF8351" transform="translate(0 1)"/>
+<rect x="-200" y="-200" width="1424" height="1424" fill="url(#g-face)" mask="url(#m-glyph)"/>
+<rect x="-200" y="-200" width="1424" height="1424" fill="#FFF" opacity="0.9" mask="url(#m-glyph-top)" filter="url(#f-soft)"/>
+<rect x="-200" y="-200" width="1424" height="1424" fill="#FF7137" opacity="0.3" mask="url(#m-glyph-bottom)" filter="url(#f-soft)"/>
+</g>
+<rect x="100.0" y="100.0" width="824" height="824" fill="#FFF" opacity="0.8" mask="url(#m-body-top)" filter="url(#f-soft)"/>
+<rect x="100.0" y="100.0" width="824" height="824" fill="#000" opacity="0.125" mask="url(#m-body-bottom)" filter="url(#f-soft)"/>
+</g>
+<use href="#body-shape" fill="none" stroke="url(#g-edge)" stroke-width="2"/>
+</svg>

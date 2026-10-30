@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="term">
+    <header class="term-head">
+      <span class="avatar" id="term-avatar"><span class="dot"></span></span>
+      <h1 id="term-name">…</h1>
+      <span class="badge" id="term-badge"></span>
+      <span class="stats" id="term-stats" hidden></span>
+      <div class="actions">
+        <button class="icon-btn sm" id="term-pin" title="Garder au premier plan"></button>
+        <button class="icon-btn sm" id="term-clear" title="Vider les logs"></button>
+        <span class="sep"></span>
+        <button class="icon-btn sm" id="term-restart" title="Redémarrer"></button>
+        <button class="icon-btn sm stop" id="term-stop" title="Arrêter"></button>
+        <span class="sep"></span>
+        <button class="icon-btn sm" id="term-dock" title="Rattacher à la fenêtre principale"></button>
+      </div>
+    </header>
+    <div class="log-lines" id="log-lines"></div>
+    <div class="term-banner" id="term-banner" hidden>
+      <span class="msg" id="term-msg"></span>
+      <span id="term-banner-actions"></span>
+    </div>
+  </div>
+  <script src="shared.js"></script>
+  <script src="terminal.js"></script>
+</body>
+</html>
