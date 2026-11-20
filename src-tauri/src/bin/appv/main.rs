@@ -8,6 +8,8 @@
 #[allow(dead_code)] // shared with the GUI, which uses the rest
 mod config;
 mod agents;
+#[path = "../../child_env.rs"]
+mod child_env;
 #[path = "../../ipc_common.rs"]
 mod ipc_common;
 mod ipc;
@@ -747,7 +749,7 @@ fn ensure_gui() -> Res {
         return Err(format!("{} introuvable (appv doit être à côté d'App Viewer)", gui.display()));
     }
     win::allow_foreground();
-    Command::new(&gui).spawn().map_err(|e| format!("lancement d'App Viewer impossible : {e}"))?;
+    spawn_gui(&gui, &[])?;
     let started = Instant::now();
     while started.elapsed() < Duration::from_secs(20) {
         thread::sleep(Duration::from_millis(300));
@@ -770,11 +772,39 @@ fn send_to_gui(action: &str, id: &str) -> Res {
         return Err(format!("{} introuvable (appv doit être à côté d'App Viewer)", gui.display()));
     }
     win::allow_foreground();
-    Command::new(&gui)
-        .args([action, id])
-        .spawn()
-        .map_err(|e| format!("lancement d'App Viewer impossible : {e}"))?;
-    Ok(())
+    spawn_gui(&gui, &[action, id])
+}
+
+/// Starts app-viewer.exe detached from whoever runs appv (often an AI agent's shell): no shared
+/// stdout/stderr (the agent's command would wait for App Viewer to exit before completing), not
+/// in its job object when that is allowed (App Viewer would die with the command), not in its
+/// folder, and without the agent session's variables (App Viewer passes its environment on to
+/// every app it launches).
+fn spawn_gui(gui: &Path, args: &[&str]) -> Res {
+    use std::{os::windows::process::CommandExt, process::Stdio};
+    const DETACHED_PROCESS: u32 = 0x0000_0008;
+    const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+    const CREATE_BREAKAWAY_FROM_JOB: u32 = 0x0100_0000;
+
+    let spawn = |flags: u32| {
+        let mut cmd = Command::new(gui);
+        cmd.args(args)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .creation_flags(flags);
+        if let Some(dir) = gui.parent() {
+            cmd.current_dir(dir);
+        }
+        child_env::scrub_agent_env(&mut cmd);
+        cmd.spawn()
+    };
+    let flags = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP;
+    // Breaking away is refused (access denied) when the caller's job doesn't allow it.
+    spawn(flags | CREATE_BREAKAWAY_FROM_JOB)
+        .or_else(|_| spawn(flags))
+        .map(|_| ())
+        .map_err(|e| format!("lancement d'App Viewer impossible : {e}"))
 }
 
 /// Status of an app as App Viewer sees it ("running", "stopped"…), if it is running.

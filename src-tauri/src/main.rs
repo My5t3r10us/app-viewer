@@ -3,6 +3,7 @@
 mod agent;
 mod embed;
 mod capture;
+mod child_env;
 mod config;
 mod downloads;
 mod ipc;
