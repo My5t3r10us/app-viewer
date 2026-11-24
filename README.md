@@ -1,5 +1,7 @@
 # App Viewer
 
+[![CI](https://github.com/My5t3r10us/app-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/My5t3r10us/app-viewer/actions/workflows/ci.yml)
+
 Application Windows native (Tauri 2 + WebView2) qui regroupe vos mini-apps web locales.
 Pour chaque app vous indiquez **dossier**, **commande de lancement** et **port** : App Viewer
 lance la commande, attend que le port réponde, puis affiche l'app dans une WebView2 native
@@ -118,6 +120,26 @@ son id. `appv` modifie directement `apps.json` ; l'interface ouverte le recharge
 (une app supprimée est arrêtée). `open` / `stop` passent par `app-viewer.exe --open|--stop <id>`,
 transmis à l'instance en cours par le plugin single-instance ; `open` attend ensuite que le port
 réponde (`--no-wait`, `--timeout <s>`).
+
+## Releases
+
+Les installeurs Windows (NSIS) sont publiés sur la page
+[Releases](https://github.com/My5t3r10us/app-viewer/releases) : téléchargez
+`App Viewer_<version>_x64-setup.exe` et lancez-le. L'installeur n'est pas signé, Windows
+SmartScreen peut donc demander une confirmation (« Informations complémentaires » puis
+« Exécuter quand même »).
+
+Publier une version :
+
+1. Mettre le même numéro dans `package.json`, `src-tauri/Cargo.toml` et
+   `src-tauri/tauri.conf.json` (et les lockfiles), puis fusionner dans `main`.
+2. Créer et pousser le tag : `git tag v0.7.3 && git push origin v0.7.3`.
+3. Le workflow `Release` construit l'installeur et crée la release avec le `.exe` en pièce jointe
+   (il échoue si le tag ne correspond pas à la version de `tauri.conf.json`).
+
+La CI (`.github/workflows/ci.yml`, sur `windows-latest`) tourne sur chaque PR et sur les pushes vers
+`main` et `lot/**` : `cargo test`, `cargo clippy -D warnings`, `cargo audit` et `tauri build`.
+L'installeur de chaque run est disponible en artefact (`app-viewer-nsis`).
 
 ## Développement
 
