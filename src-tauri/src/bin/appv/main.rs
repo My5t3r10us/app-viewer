@@ -835,3 +835,67 @@ fn port_open(port: u16) -> bool {
         .iter()
         .any(|addr| TcpStream::connect_timeout(addr, timeout).is_ok())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn app(id: &str, name: &str) -> AppConfig {
+        AppConfig {
+            id: id.into(),
+            name: name.into(),
+            path: String::new(),
+            command: "npm start".into(),
+            port: 3000,
+            kind: AppKind::Web,
+            url_path: "/".into(),
+            autostart: false,
+            set_port_env: true,
+        }
+    }
+
+    fn apps() -> Vec<AppConfig> {
+        vec![app("a1", "Dashboard"), app("b2", "Docs API"), app("c3", "Docs Web"), app("d4", "Docs")]
+    }
+
+    #[test]
+    fn find_by_id_number_and_exact_name() {
+        let apps = apps();
+        assert_eq!(find(&apps, "c3"), Ok(2));
+        assert_eq!(find(&apps, "2"), Ok(1));
+        assert_eq!(find(&apps, " 4 "), Ok(3));
+        // Exact name (any case) wins over the names it is the start of.
+        assert_eq!(find(&apps, "docs"), Ok(3));
+        assert_eq!(find(&apps, "DOCS API"), Ok(1));
+    }
+
+    #[test]
+    fn find_by_unique_prefix_then_substring() {
+        let apps = apps();
+        assert_eq!(find(&apps, "dash"), Ok(0));
+        assert_eq!(find(&apps, "docs w"), Ok(2));
+        assert_eq!(find(&apps, "api"), Ok(1));
+    }
+
+    #[test]
+    fn find_reports_ambiguous_and_unknown_names() {
+        let apps = apps();
+        let err = find(&apps, "doc").unwrap_err();
+        assert!(err.contains("ambigu") && err.contains("Docs API") && err.contains("Docs Web"), "{err}");
+        let err = find(&apps, "D").unwrap_err();
+        assert!(err.contains("ambigu"), "{err}");
+        let err = find(&apps, "inconnue").unwrap_err();
+        assert!(err.contains("aucune application « inconnue »"), "{err}");
+        // A number outside the list is looked up as a name, and found nowhere.
+        assert!(find(&apps, "9").unwrap_err().contains("aucune application"));
+        assert!(find(&[], "1").is_err());
+    }
+
+    #[test]
+    fn unique_name_check_ignores_case_and_the_app_itself() {
+        let apps = apps();
+        assert!(check_unique_name(&apps, &app("new", "dashboard")).is_err());
+        assert!(check_unique_name(&apps, &app("a1", "Dashboard")).is_ok());
+        assert!(check_unique_name(&apps, &app("new", "Autre")).is_ok());
+    }
+}

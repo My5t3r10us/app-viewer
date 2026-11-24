@@ -212,3 +212,158 @@ fn first_port_number(line: &str) -> Option<u16> {
         .find_map(|d| d.parse::<u16>().ok().filter(|p| *p >= 1024))
 }
 
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    /// Fresh folder `<temp>/appv-test-config-…/<name>`: the folder name is what `inspect_folder`
+    /// suggests as app name.
+    fn temp_dir(tag: &str, name: &str) -> PathBuf {
+        let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+        let dir = std::env::temp_dir()
+            .join(format!("appv-test-config-{tag}-{}-{nanos}", std::process::id()))
+            .join(name);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    fn cleanup(dir: &Path) {
+        fs::remove_dir_all(dir.parent().unwrap()).unwrap();
+    }
+
+    fn web_app(path: &Path) -> AppConfig {
+        AppConfig {
+            id: "x1".into(),
+            name: "  Mon app ".into(),
+            path: format!(" {} ", path.display()),
+            command: " npm start ".into(),
+            port: 3000,
+            kind: AppKind::Web,
+            url_path: "/".into(),
+            autostart: false,
+            set_port_env: true,
+        }
+    }
+
+    #[test]
+    fn inspect_start_script_reads_port_from_entry_file() {
+        let dir = temp_dir("start", "mon-app");
+        fs::write(dir.join("package.json"), r#"{ "scripts": { "start": "node server.js --quiet" } }"#).unwrap();
+        fs::write(
+            dir.join("server.js"),
+            "const open = !process.argv.includes('--no-open');\nconst version = 12345;\nconst PORT = process.env.PORT || 4321;\n",
+        )
+        .unwrap();
+        let info = inspect_folder(&dir);
+        assert_eq!(info.name.as_deref(), Some("mon-app"));
+        assert_eq!(info.command.as_deref(), Some("node server.js --quiet --no-open"));
+        assert_eq!(info.port, Some(4321));
+        cleanup(&dir);
+    }
+
+    #[test]
+    fn inspect_dev_script_takes_port_from_env_files() {
+        let dir = temp_dir("dev", "front");
+        fs::write(dir.join("package.json"), r#"{ "scripts": { "dev": "vite", "build": "vite build" } }"#).unwrap();
+        fs::write(dir.join(".env.local"), "PORT=5174\n").unwrap();
+        let info = inspect_folder(&dir);
+        assert_eq!(info.command.as_deref(), Some("npm run dev"));
+        assert_eq!(info.port, Some(5174));
+        // .env is read before .env.local.
+        fs::write(dir.join(".env"), "API_URL=http://localhost:8080\n  PORT= 5173 \n").unwrap();
+        assert_eq!(inspect_folder(&dir).port, Some(5173));
+        cleanup(&dir);
+    }
+
+    #[test]
+    fn inspect_main_field_and_folder_without_package_json() {
+        let dir = temp_dir("main", "api");
+        fs::write(dir.join("package.json"), r#"{ "main": "index.js" }"#).unwrap();
+        fs::write(dir.join("index.js"), "app.listen(80);\n// port 1000 ou 70000 : ignorés\nconst port = 8081;\n").unwrap();
+        let info = inspect_folder(&dir);
+        assert_eq!(info.command.as_deref(), Some("node index.js"));
+        assert_eq!(info.port, Some(8081));
+        cleanup(&dir);
+
+        let empty = temp_dir("empty", "vide");
+        let info = inspect_folder(&empty);
+        assert_eq!(info.name.as_deref(), Some("vide"));
+        assert_eq!((info.command, info.port, info.native_command), (None, None, None));
+        cleanup(&empty);
+    }
+
+    #[test]
+    fn native_command_prefers_an_exe_then_dev_scripts() {
+        let dir = temp_dir("native", "outil");
+        fs::write(dir.join("package.json"), r#"{ "scripts": { "dev": "x", "tauri:dev": "tauri dev" } }"#).unwrap();
+        assert_eq!(guess_native_command(&dir).as_deref(), Some("npm run tauri:dev"));
+        fs::create_dir_all(dir.join("dist")).unwrap();
+        fs::write(dir.join("dist").join("outil.exe"), "").unwrap();
+        assert_eq!(guess_native_command(&dir).as_deref(), Some(r#""dist\outil.exe""#));
+        fs::write(dir.join("outil.exe"), "").unwrap();
+        assert_eq!(guess_native_command(&dir).as_deref(), Some("\"outil.exe\""));
+        cleanup(&dir);
+    }
+
+    #[test]
+    fn validate_trims_and_rejects_bad_fields() {
+        let dir = temp_dir("validate", "app");
+        let mut cfg = web_app(&dir);
+        cfg.validate().unwrap();
+        assert_eq!((cfg.name.as_str(), cfg.command.as_str()), ("Mon app", "npm start"));
+        assert_eq!(cfg.path, dir.display().to_string());
+
+        let mut no_name = web_app(&dir);
+        no_name.name = "  ".into();
+        assert!(no_name.validate().is_err());
+        let mut no_port = web_app(&dir);
+        no_port.port = 0;
+        assert_eq!(no_port.validate(), Err("Port invalide.".into()));
+        let mut native = web_app(&dir);
+        native.kind = AppKind::Native;
+        native.validate().unwrap();
+        assert_eq!(native.port, 0);
+        let mut missing = web_app(&dir.join("absent"));
+        assert!(missing.validate().unwrap_err().contains("n'existe pas"));
+        cleanup(&dir);
+    }
+
+    #[test]
+    fn url_adds_the_leading_slash() {
+        let mut cfg = web_app(Path::new("."));
+        cfg.url_path = " admin/users ".into();
+        assert_eq!(cfg.url(), "http://localhost:3000/admin/users");
+        cfg.url_path = "/".into();
+        assert_eq!(cfg.url(), "http://localhost:3000/");
+    }
+
+    #[test]
+    fn save_then_load_round_trips_and_fills_defaults() {
+        let dir = temp_dir("save", "conf");
+        let path = dir.join("sub").join("apps.json");
+        assert_eq!(try_load(&path), Ok(Vec::new()));
+        let apps = vec![web_app(&dir)];
+        save(&path, &apps).unwrap();
+        assert!(!path.with_extension("json.tmp").exists());
+        assert_eq!(try_load(&path).unwrap(), apps);
+
+        // A file from an older version, without the newer fields.
+        fs::write(&path, r#"{ "apps": [ { "name": "A", "path": "C:\\a", "command": "npm start", "port": 3000 } ] }"#).unwrap();
+        let old = &try_load(&path).unwrap()[0];
+        assert_eq!((old.kind, old.url_path.as_str(), old.set_port_env, old.autostart), (AppKind::Web, "/", true, false));
+        cleanup(&dir);
+    }
+
+    #[test]
+    fn unreadable_config_is_an_error_for_the_cli_and_kept_aside_by_the_gui() {
+        let dir = temp_dir("invalid", "conf");
+        let path = dir.join("apps.json");
+        fs::write(&path, "{ pas du json").unwrap();
+        assert!(try_load(&path).unwrap_err().contains("illisible"));
+        assert!(load(&path).is_empty());
+        assert_eq!(fs::read_to_string(dir.join("apps.invalid.json")).unwrap(), "{ pas du json");
+        cleanup(&dir);
+    }
+}
