@@ -5,6 +5,8 @@ Pour chaque app vous indiquez **dossier**, **commande de lancement** et **port**
 lance la commande, attend que le port réponde, puis affiche l'app dans une WebView2 native
 intégrée à la fenêtre.
 
+Ce qui est fait, en cours et envisagé : [ROADMAP.md](ROADMAP.md).
+
 ## Fonctionnement
 
 - Chaque app tourne dans sa propre WebView2 : passer d'une app à l'autre conserve l'état des pages.
