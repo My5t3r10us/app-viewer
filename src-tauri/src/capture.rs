@@ -82,7 +82,7 @@ pub fn bring_forward(app: &AppHandle, id: &str) -> Result<(), String> {
     }
     // The page must have a real address before it is worth capturing.
     let deadline = Instant::now() + Duration::from_secs(5);
-    while views::webview(app, id).and_then(|wv| wv.url().ok()).map_or(true, |u| u.scheme() == "about") {
+    while views::webview(app, id).and_then(|wv| wv.url().ok()).is_none_or(|u| u.scheme() == "about") {
         if Instant::now() > deadline {
             break;
         }
@@ -204,7 +204,7 @@ fn decode_png(bytes: &[u8]) -> Result<Image, String> {
     buf.truncate(info.buffer_size());
     let rgba = match info.color_type {
         png::ColorType::Rgba => buf,
-        png::ColorType::Rgb => buf.chunks_exact(3).flat_map(|p| [p[0], p[1], p[2], 255]).collect(),
+        png::ColorType::Rgb => buf.as_chunks::<3>().0.iter().flat_map(|&[r, g, b]| [r, g, b, 255]).collect(),
         other => return Err(format!("Format d'image inattendu ({other:?}).")),
     };
     Ok(Image { width: info.width, height: info.height, rgba })
@@ -277,10 +277,10 @@ fn purge(dir: &Path) {
         .filter(|p| p.extension().is_some_and(|x| x.eq_ignore_ascii_case("png")))
         .filter_map(|p| Some((fs::metadata(&p).ok()?.modified().ok()?, p)))
         .collect();
-    files.sort_by(|a, b| b.0.cmp(&a.0)); // newest first
+    files.sort_by_key(|f| std::cmp::Reverse(f.0)); // newest first
     let now = SystemTime::now();
     for (i, (modified, path)) in files.iter().enumerate() {
-        let too_old = now.duration_since(*modified).map_or(false, |age| age > KEEP_FOR);
+        let too_old = now.duration_since(*modified).is_ok_and(|age| age > KEEP_FOR);
         if i >= KEEP_FILES || too_old {
             let _ = fs::remove_file(path);
         }

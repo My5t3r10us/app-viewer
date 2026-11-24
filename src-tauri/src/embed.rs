@@ -107,7 +107,7 @@ unsafe extern "system" fn visit(hwnd: HWND, lparam: LPARAM) -> BOOL {
     let mut r: RECT = std::mem::zeroed();
     GetWindowRect(hwnd, &mut r);
     let area = (r.right - r.left) as i64 * (r.bottom - r.top) as i64;
-    if area > 100 * 100 && search.best.map_or(true, |(_, a)| area > a) {
+    if area > 100 * 100 && search.best.is_none_or(|(_, a)| area > a) {
         search.best = Some((hwnd as isize, area));
     }
     1

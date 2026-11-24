@@ -172,7 +172,7 @@ pub fn resume(child: &Child) -> io::Result<()> {
         }
         CloseHandle(snap);
         if resumed == 0 {
-            Err(io::Error::new(io::ErrorKind::Other, "aucun thread à reprendre"))
+            Err(io::Error::other("aucun thread à reprendre"))
         } else {
             Ok(())
         }
