@@ -1,7 +1,7 @@
 {
   "name": "app-viewer",
   "private": true,
-  "version": "0.7.2",
+  "version": "0.7.3",
   "scripts": {
     "dev": "cargo run --manifest-path src-tauri/Cargo.toml",
     "build": "tauri build",
