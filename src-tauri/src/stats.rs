@@ -48,6 +48,9 @@ enum Source {
     Port(u16),
 }
 
+/// Job of an app launched by App Viewer, with its run generation.
+type JobRun = (Arc<Job>, u64);
+
 /// What a CPU time sample belongs to: a diff is only meaningful within the same run / process.
 #[derive(PartialEq, Clone, Copy)]
 enum Key {
@@ -67,7 +70,7 @@ pub fn watch(app: AppHandle) {
                 continue;
             }
             let st = app.state::<AppState>();
-            let pending: Vec<(String, Option<(Arc<Job>, u64)>)> = st
+            let pending: Vec<(String, Option<JobRun>)> = st
                 .runtimes
                 .lock()
                 .unwrap()

@@ -8,6 +8,8 @@
 #[allow(dead_code)] // shared with the GUI, which uses the rest
 mod config;
 mod agents;
+#[path = "../../child_env.rs"]
+mod child_env;
 #[path = "../../ipc_common.rs"]
 mod ipc_common;
 mod ipc;
@@ -747,7 +749,7 @@ fn ensure_gui() -> Res {
         return Err(format!("{} introuvable (appv doit être à côté d'App Viewer)", gui.display()));
     }
     win::allow_foreground();
-    Command::new(&gui).spawn().map_err(|e| format!("lancement d'App Viewer impossible : {e}"))?;
+    spawn_gui(&gui, &[])?;
     let started = Instant::now();
     while started.elapsed() < Duration::from_secs(20) {
         thread::sleep(Duration::from_millis(300));
@@ -770,11 +772,39 @@ fn send_to_gui(action: &str, id: &str) -> Res {
         return Err(format!("{} introuvable (appv doit être à côté d'App Viewer)", gui.display()));
     }
     win::allow_foreground();
-    Command::new(&gui)
-        .args([action, id])
-        .spawn()
-        .map_err(|e| format!("lancement d'App Viewer impossible : {e}"))?;
-    Ok(())
+    spawn_gui(&gui, &[action, id])
+}
+
+/// Starts app-viewer.exe detached from whoever runs appv (often an AI agent's shell): no shared
+/// stdout/stderr (the agent's command would wait for App Viewer to exit before completing), not
+/// in its job object when that is allowed (App Viewer would die with the command), not in its
+/// folder, and without the agent session's variables (App Viewer passes its environment on to
+/// every app it launches).
+fn spawn_gui(gui: &Path, args: &[&str]) -> Res {
+    use std::{os::windows::process::CommandExt, process::Stdio};
+    const DETACHED_PROCESS: u32 = 0x0000_0008;
+    const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+    const CREATE_BREAKAWAY_FROM_JOB: u32 = 0x0100_0000;
+
+    let spawn = |flags: u32| {
+        let mut cmd = Command::new(gui);
+        cmd.args(args)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .creation_flags(flags);
+        if let Some(dir) = gui.parent() {
+            cmd.current_dir(dir);
+        }
+        child_env::scrub_agent_env(&mut cmd);
+        cmd.spawn()
+    };
+    let flags = DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP;
+    // Breaking away is refused (access denied) when the caller's job doesn't allow it.
+    spawn(flags | CREATE_BREAKAWAY_FROM_JOB)
+        .or_else(|_| spawn(flags))
+        .map(|_| ())
+        .map_err(|e| format!("lancement d'App Viewer impossible : {e}"))
 }
 
 /// Status of an app as App Viewer sees it ("running", "stopped"…), if it is running.
@@ -804,4 +834,68 @@ fn port_open(port: u16) -> bool {
     [SocketAddr::from((Ipv4Addr::LOCALHOST, port)), SocketAddr::from((Ipv6Addr::LOCALHOST, port))]
         .iter()
         .any(|addr| TcpStream::connect_timeout(addr, timeout).is_ok())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn app(id: &str, name: &str) -> AppConfig {
+        AppConfig {
+            id: id.into(),
+            name: name.into(),
+            path: String::new(),
+            command: "npm start".into(),
+            port: 3000,
+            kind: AppKind::Web,
+            url_path: "/".into(),
+            autostart: false,
+            set_port_env: true,
+        }
+    }
+
+    fn apps() -> Vec<AppConfig> {
+        vec![app("a1", "Dashboard"), app("b2", "Docs API"), app("c3", "Docs Web"), app("d4", "Docs")]
+    }
+
+    #[test]
+    fn find_by_id_number_and_exact_name() {
+        let apps = apps();
+        assert_eq!(find(&apps, "c3"), Ok(2));
+        assert_eq!(find(&apps, "2"), Ok(1));
+        assert_eq!(find(&apps, " 4 "), Ok(3));
+        // Exact name (any case) wins over the names it is the start of.
+        assert_eq!(find(&apps, "docs"), Ok(3));
+        assert_eq!(find(&apps, "DOCS API"), Ok(1));
+    }
+
+    #[test]
+    fn find_by_unique_prefix_then_substring() {
+        let apps = apps();
+        assert_eq!(find(&apps, "dash"), Ok(0));
+        assert_eq!(find(&apps, "docs w"), Ok(2));
+        assert_eq!(find(&apps, "api"), Ok(1));
+    }
+
+    #[test]
+    fn find_reports_ambiguous_and_unknown_names() {
+        let apps = apps();
+        let err = find(&apps, "doc").unwrap_err();
+        assert!(err.contains("ambigu") && err.contains("Docs API") && err.contains("Docs Web"), "{err}");
+        let err = find(&apps, "D").unwrap_err();
+        assert!(err.contains("ambigu"), "{err}");
+        let err = find(&apps, "inconnue").unwrap_err();
+        assert!(err.contains("aucune application « inconnue »"), "{err}");
+        // A number outside the list is looked up as a name, and found nowhere.
+        assert!(find(&apps, "9").unwrap_err().contains("aucune application"));
+        assert!(find(&[], "1").is_err());
+    }
+
+    #[test]
+    fn unique_name_check_ignores_case_and_the_app_itself() {
+        let apps = apps();
+        assert!(check_unique_name(&apps, &app("new", "dashboard")).is_err());
+        assert!(check_unique_name(&apps, &app("a1", "Dashboard")).is_ok());
+        assert!(check_unique_name(&apps, &app("new", "Autre")).is_ok());
+    }
 }

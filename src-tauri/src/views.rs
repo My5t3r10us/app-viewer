@@ -163,7 +163,7 @@ pub fn zoom_changed(app: &AppHandle, id: &str, factor: f64) {
         let changed = if (factor - 1.0).abs() < 1e-6 {
             settings.zoom.remove(id).is_some()
         } else {
-            settings.zoom.insert(id.to_string(), factor).map_or(true, |old| (old - factor).abs() > 1e-6)
+            settings.zoom.insert(id.to_string(), factor).is_none_or(|old| (old - factor).abs() > 1e-6)
         };
         changed.then(|| settings.clone())
     };

@@ -77,6 +77,8 @@ pub fn start(app: &AppHandle, id: &str) -> Result<(), String> {
     } else {
         cmd.env_remove("PORT");
     }
+    // Same environment whoever started App Viewer (the user, or an agent session via `appv open`).
+    crate::child_env::scrub_agent_env(&mut cmd);
 
     let fail = |msg: String| {
         push_log(app, id, format!("✖ {msg}"));
